@@ -9,7 +9,8 @@ const upload = multer({ dest: 'images/' })
 const app = express()
 
 // app.use('/images', express.static('images'))
-
+// Before the other routes
+app.use(express.static("build"))
 
 app.post('/api/images', upload.single('image'), async(req, res) => {
   const imagePath = req.file.path
@@ -44,6 +45,11 @@ app.get("/api/images", async(req, res) => {
     readStream.pipe(res)
   })
   
+
+
+// After all other routes
+app.get('*', (req, res) => {
+  res.sendFile('build/index.html')})
 
 const port = process.env.PORT || 8080
 app.listen(8080, () => console.log("listening on port 8080"))

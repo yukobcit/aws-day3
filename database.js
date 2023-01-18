@@ -34,13 +34,13 @@ async function getImage(id) {
 }
 exports.getImage = getImage
 
-async function addImage(filePath, description) {
+async function addImage(filename, description) {
   let query = `
-  INSERT INTO images (file_path, description)
+  INSERT INTO images (file_name, description)
   VALUES(?, ?)
   `
 
-  const [result] = await pool.query(query, [filePath, description]);
+  const [result] = await pool.query(query, [filename, description]);
   const id = result.insertId
 
   return await getImage(id)
