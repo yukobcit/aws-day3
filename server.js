@@ -13,23 +13,19 @@ const app = express()
 app.use(express.static("build"))
 
 app.post('/api/images', upload.single('image'), async(req, res) => {
-  const imagePath = req.file.path
+  const file_name = req.file.path
   const description = req.body.description
-
   // Save this data to a database probably
   const data = req.body
-  console.log(imagePath)
-  await database.addImage(imagePath,description)
-
-  console.log(description, imagePath)
-  res.send({description, imagePath})
+  await database.addImage(file_name,description)
+  res.send({description, file_name})
 })
 
 // Get a list of all the images from the database
 app.get("/api/images", async(req, res) => {
   const images = await database.getImages();
   // console.log(images)
-  res.send({images: images})
+  res.send({images})
 })
 
 // Get the single image file, given the file path
@@ -38,18 +34,14 @@ app.get("/api/images", async(req, res) => {
     // do a bunch of if statements to make sure the user is 
     // authorized to view this image, then
   
-    //console.log("TEST", req.body);
-    const imagePath = req.params[0]
-    // console.log(imagePath);
-    const readStream = fs.createReadStream(imagePath)
+    const file_name = req.params[0]
+    const readStream = fs.createReadStream(file_name)
     readStream.pipe(res)
   })
   
-
-
 // After all other routes
 app.get('*', (req, res) => {
   res.sendFile('build/index.html')})
 
 const port = process.env.PORT || 8080
-app.listen(8080, () => console.log("listening on port 8080"))
+app.listen(port, () => console.log(`listening on port ${port}`))
