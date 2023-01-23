@@ -3,11 +3,14 @@ const fs = require('fs')
 const multer = require('multer')
 require('dotenv').config()
 const database = require("./database.js");
+const cors = require('cors');
+
 
 const upload = multer({ dest: 'images/' })
 
 const app = express()
 
+app.use(cors());
 // app.use('/images', express.static('images'))
 // Before the other routes
 app.use(express.static("build"))
