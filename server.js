@@ -11,7 +11,7 @@ const upload = multer({ dest: 'images/' })
 const app = express()
 
 app.use(cors());
-// app.use('/images', express.static('images'))
+app.use('/images', express.static('images'))
 // Before the other routes
 app.use(express.static("build"))
 
