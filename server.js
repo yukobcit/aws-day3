@@ -20,6 +20,7 @@ app.post('/api/images', upload.single('image'), async(req, res) => {
   const description = req.body.description
   // Save this data to a database probably
   const data = req.body
+  console.log(data);
   await database.addImage(file_name,description)
   res.send({description, file_name})
 })
