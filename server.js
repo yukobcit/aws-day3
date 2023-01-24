@@ -4,6 +4,12 @@ const multer = require('multer')
 require('dotenv').config()
 const database = require("./database.js");
 const cors = require('cors');
+import * as s3 from './s3'
+
+import crypto from 'crypto'
+
+const generateFileName = (bytes = 32) => crypto.randomBytes(bytes).toString('hex')
+
 
 
 const upload = multer({ dest: 'images/' })
@@ -16,22 +22,54 @@ app.use('/images', express.static('images'))
 app.use(express.static("build"))
 
 
-app.post('/api/images', upload.single('image'), async(req, res) => {
-  const file_name = req.file.path
+// app.post('/api/images', upload.single('image'), async(req, res) => {
+//   const file_name = req.file.path
+//   const description = req.body.description
+//   // Save this data to a database probably
+//   const data = req.body
+//   console.log(data);
+//   await database.addImage(file_name,description)
+//   res.send({description, file_name})
+// })
+
+app.post("/api/images", upload.single('image'), async (req, res) => {
+  // Get the data from the post request
   const description = req.body.description
-  // Save this data to a database probably
-  const data = req.body
-  console.log(data);
-  await database.addImage(file_name,description)
-  res.send({description, file_name})
+  const fileBuffer = req.file.buffer
+  const mimetype = req.file.mimetype
+  const fileName = generateFileName() //"a_file_name" //
+
+  // process image here!
+  
+
+  // Store the image in s3
+  const s3Result = await s3.uploadImage(fileBuffer, fileName, mimetype)
+
+  // Store the image in the database
+  const databaseResult = await database.addImage(fileName, description)
+
+  res.status(201).send(result)
 })
 
-// Get a list of all the images from the database
-app.get("/api/images", async(req, res) => {
-  const images = await database.getImages();
-  // console.log(images)
-  res.send({images})
+
+app.get("/api/images", async (req, res) => {
+  const images = await database.getImages()
+
+  // Add the signed url to each image
+  for (const image of images) {
+    image.imageURL = await s3.getSignedUrl(image.fileName)
+  }
+
+  res.send(images)
 })
+
+
+// // Get a list of all the images from the database
+// app.get("/api/images", async(req, res) => {
+//   const images = await database.getImages();
+//   // console.log(images)
+//   res.send({images})
+// })
 
 // Get the single image file, given the file path
 // app.get('/api/images/images/:imageName', (req, res) => {
