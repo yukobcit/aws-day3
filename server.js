@@ -15,6 +15,7 @@ app.use('/images', express.static('images'))
 // Before the other routes
 app.use(express.static("build"))
 
+
 app.post('/api/images', upload.single('image'), async(req, res) => {
   const file_name = req.file.path
   const description = req.body.description
