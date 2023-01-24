@@ -1,10 +1,20 @@
-const express = require('express')
-const fs = require('fs')
-const multer = require('multer')
-require('dotenv').config()
-const database = require("./database.js");
-const cors = require('cors');
-import * as s3 from './s3'
+// const express = require('express')
+import express from 'express'
+
+// const fs = require('fs')
+import fs from 'fs'
+
+// const multer = require('multer')
+import multer from 'multer'
+import dotenv from 'dotenv'
+dotenv.config()
+
+// const database = require("./database.js");
+import * as database from './database.js'
+
+// // const cors = require('cors');
+import cors from 'cors'
+import * as s3 from './s3.js'
 
 import crypto from 'crypto'
 
@@ -33,6 +43,7 @@ app.use(express.static("build"))
 // })
 
 app.post("/api/images", upload.single('image'), async (req, res) => {
+  console.log("test");
   // Get the data from the post request
   const description = req.body.description
   const fileBuffer = req.file.buffer
@@ -51,9 +62,10 @@ app.post("/api/images", upload.single('image'), async (req, res) => {
   res.status(201).send(result)
 })
 
-
+// this one
 app.get("/api/images", async (req, res) => {
-  const images = await database.getImages()
+  const images = await database.getImages();
+  console.log(images)
 
   // Add the signed url to each image
   for (const image of images) {
@@ -73,14 +85,15 @@ app.get("/api/images", async (req, res) => {
 
 // Get the single image file, given the file path
 // app.get('/api/images/images/:imageName', (req, res) => {
-  app.get('/api/image/*', (req, res) => {
-    // do a bunch of if statements to make sure the user is 
-    // authorized to view this image, then
+
+  // app.get('/api/image/*', (req, res) => {
+  //   // do a bunch of if statements to make sure the user is 
+  //   // authorized to view this image, then
   
-    const file_name = req.params[0]
-    const readStream = fs.createReadStream(file_name)
-    readStream.pipe(res)
-  })
+  //   const file_name = req.params[0]
+  //   const readStream = fs.createReadStream(file_name)
+  //   readStream.pipe(res)
+  // })
   
 // After all other routes
 app.get('*', (req, res) => {

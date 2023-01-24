@@ -29,7 +29,9 @@ export async function uploadImage(imageBuffer, imageName, mimetype) {
       // ContentType: file.mimetype
       ContentType: mimetype
     }
+    
   
+    console.log(params)
     // Upload the image to S3
     const command = new PutObjectCommand(params)
     const data = await s3Client.send(command)
