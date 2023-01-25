@@ -1,10 +1,10 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3"
 
-import dotenv from 'dotenv'
+
 
 import { GetObjectCommand } from "@aws-sdk/client-s3"
 import * as presigner from '@aws-sdk/s3-request-presigner'
-
+import dotenv from 'dotenv'
 dotenv.config()
 
 const bucketName = process.env.AWS_BUCKET_NAME
@@ -30,7 +30,6 @@ export async function uploadImage(imageBuffer, imageName, mimetype) {
       ContentType: mimetype
     }
     
-  
     console.log(params)
     // Upload the image to S3
     const command = new PutObjectCommand(params)
@@ -56,6 +55,15 @@ export async function getSignedUrl(fileName) {
 }
 
 
-export async function deleteImage(){
+export async function deleteImage(fileName){
+
+  const command = new DeleteObjectCommand({
+    Bucket: bucketName,
+    Key: fileName
+  })
+
+  const data = await s3Client.send(command)
+
+  return data
 
 }

@@ -1,5 +1,6 @@
 // const express = require('express')
 import express from 'express'
+import sharp from 'sharp'
 
 // const fs = require('fs')
 import fs from 'fs'
@@ -17,12 +18,13 @@ import cors from 'cors'
 import * as s3 from './s3.js'
 
 import crypto from 'crypto'
+import { PutBucketVersioningCommand } from '@aws-sdk/client-s3'
 
 const generateFileName = (bytes = 32) => crypto.randomBytes(bytes).toString('hex')
 
-
-
-const upload = multer({ dest: 'images/' })
+// const upload = multer({ dest: 'images/' })
+const storage = multer.memoryStorage()
+const upload = multer({ storage: storage })
 
 const app = express()
 
@@ -51,28 +53,42 @@ app.post("/api/images", upload.single('image'), async (req, res) => {
   const fileName = generateFileName() //"a_file_name" //
 
   // process image here!
-  
+  const fileBufferSharp = await sharp(fileBuffer)
+  .resize({ height: 100, width: 100, fit: "contain" })
+  .toBuffer()
 
   // Store the image in s3
-  const s3Result = await s3.uploadImage(fileBuffer, fileName, mimetype)
+  const s3Result = await s3.uploadImage(fileBufferSharp, fileName, mimetype)
 
   // Store the image in the database
   const databaseResult = await database.addImage(fileName, description)
 
-  res.status(201).send(result)
+  console.log(databaseResult);
+  res.status(201).send(databaseResult)
 })
 
 // this one
 app.get("/api/images", async (req, res) => {
   const images = await database.getImages();
-  console.log(images)
 
   // Add the signed url to each image
   for (const image of images) {
-    image.imageURL = await s3.getSignedUrl(image.fileName)
-  }
+    console.log(image.file_name)
+    image.imageURL = await s3.getSignedUrl(image.file_name)
 
+  }
+  console.log(images)
   res.send(images)
+})
+
+app.delete("/api/images/:id", async (req, res) => {
+  const name = req.params.id
+  const post = await s3.deleteImage(id)
+
+    // Store the image in the database
+  const databaseResult = await database.deleteImage(fileName, description)
+
+  console.log(post);
 })
 
 

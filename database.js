@@ -1,5 +1,8 @@
 // const mysql = require("mysql2")
 import mysql from 'mysql2'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 const pool = mysql
   .createPool({
@@ -46,4 +49,17 @@ export async function addImage(filename, description) {
 
   return await getImage(id)
 }
+
+export async function deleteImage(filename, description) {
+  let query = `
+  DELETE FROM images (file_name,description)
+  VALUES(?, ?)
+  `
+
+  const [result] = await pool.query(query, [filename, description]);
+  const id = result.insertId
+
+  return await getImage(id)
+}
+
 // exports.addImage = addImage
