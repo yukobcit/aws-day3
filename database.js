@@ -50,16 +50,15 @@ export async function addImage(filename, description) {
   return await getImage(id)
 }
 
-export async function deleteImage(filename, description) {
+export async function deleteImage(filename) {
   let query = `
-  DELETE FROM images (file_name,description)
-  VALUES(?, ?)
+  DELETE FROM images WHERE file_name = ? 
   `
 
-  const [result] = await pool.query(query, [filename, description]);
+  const [result] = await pool.query(query, [filename]);
   const id = result.insertId
 
-  return await getImage(id)
+  return 
 }
 
 // exports.addImage = addImage

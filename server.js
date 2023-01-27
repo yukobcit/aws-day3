@@ -45,7 +45,6 @@ app.use(express.static("build"))
 // })
 
 app.post("/api/images", upload.single('image'), async (req, res) => {
-  console.log("test");
   // Get the data from the post request
   const description = req.body.description
   const fileBuffer = req.file.buffer
@@ -62,8 +61,8 @@ app.post("/api/images", upload.single('image'), async (req, res) => {
 
   // Store the image in the database
   const databaseResult = await database.addImage(fileName, description)
+  databaseResult.imageURL = await s3.getSignedUrl(fileName);
 
-  console.log(databaseResult);
   res.status(201).send(databaseResult)
 })
 
@@ -73,43 +72,22 @@ app.get("/api/images", async (req, res) => {
 
   // Add the signed url to each image
   for (const image of images) {
-    console.log(image.file_name)
     image.imageURL = await s3.getSignedUrl(image.file_name)
-
   }
-  console.log(images)
   res.send(images)
 })
 
-app.delete("/api/images/:id", async (req, res) => {
-  const name = req.params.id
-  const post = await s3.deleteImage(id)
+app.post("/api/images/:id/delete", async (req, res) => {
 
-    // Store the image in the database
-  const databaseResult = await database.deleteImage(fileName, description)
+  const fileName = req.params.id
+  const post = await s3.deleteImage(fileName)
+    // Delete the image in the database
+  const databaseResult = await database.deleteImage(fileName)
 
-  console.log(post);
+  res.redirect('/');
+  // res.status(204),redirect('/');
+  // res.status(201).send(databaseResult)
 })
-
-
-// // Get a list of all the images from the database
-// app.get("/api/images", async(req, res) => {
-//   const images = await database.getImages();
-//   // console.log(images)
-//   res.send({images})
-// })
-
-// Get the single image file, given the file path
-// app.get('/api/images/images/:imageName', (req, res) => {
-
-  // app.get('/api/image/*', (req, res) => {
-  //   // do a bunch of if statements to make sure the user is 
-  //   // authorized to view this image, then
-  
-  //   const file_name = req.params[0]
-  //   const readStream = fs.createReadStream(file_name)
-  //   readStream.pipe(res)
-  // })
   
 // After all other routes
 app.get('*', (req, res) => {
